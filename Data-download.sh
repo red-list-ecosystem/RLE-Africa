@@ -1,6 +1,7 @@
 mkdir -p $SCRIPTDIR/Data
 cd $SCRIPTDIR/Data
 
+rsync -gloptrunv $SCRIPTDIR/Data/ $USER@terra.ad.unsw.edu.au:~/proyectos/IUCN-RLE/$PROJECTNAME/Data
 # Indicative distribution maps, #Version 2.1.1 
 # doi = "10.5281/zenodo.5090419"
 wget --continue https://zenodo.org/api/files/4991f687-63f1-4ec8-ab92-75c8fcd5bd6a/all-maps-raster-geotiff.tar.bz2

@@ -1,0 +1,2 @@
+export PROJECTNAME=RLE-Africa
+export SCRIPTDIR=$HOME/proyectos/IUCN-RLE/$PROJECTNAME
