@@ -10,7 +10,7 @@ tar -xjvf all-maps-raster-geotiff.tar.bz2
 
 #WorldBank Countries
 #...
-unzip ~/gisdata/admin/global/World-Bank/wb_boundaries_geojson_lowres.zip
+unzip -u ~/gisdata/admin/global/World-Bank/wb_boundaries_geojson_lowres.zip
 
 
 #Large marine ecosystems
@@ -31,3 +31,16 @@ ogrinfo Africa.gpkg -sql "SELECT featurecla, count(*) FROM all_territories group
 #gdalinfo T6_5_Trop_alpine_grassland.tif -hist
 #less T6_5_Trop_alpine_grassland.tif.aux.xml 
 #gdalwarp -cutline INPUT.shp -crop_to_cutline -dstalpha INPUT.tif OUTPUT.tif
+
+## South African data and scripts in  Suppements:
+# Skowno AL, Monyeki MS. 
+# South Africa’s Red List of Terrestrial Ecosystems (RLEs). 
+# Land. 2021; 10(10):1048. https://doi.org/10.3390/land10101048
+## Map is also here: 
+# http://bgis.sanbi.org/SpatialDataset/Detail/6715
+
+#We received data from Congo and Madagascar from Hedley
+unzip -u $SCRIPTDIR/Data/Congo/Congo.zip -d $SCRIPTDIR/Data/Congo
+unzip -u $SCRIPTDIR/Data/Mada/Madagascar.zip -d $SCRIPTDIR/Data/Mada
+
+unzip -u $SCRIPTDIR/Data/VEGMAP2018_AEA_16082019Final.zip -d $SCRIPTDIR/Data/
