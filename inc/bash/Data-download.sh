@@ -1,5 +1,7 @@
 source env/project-env.sh 
+
 mkdir -p $SCRIPTDIR/Data/Moz
+mkdir -p $SCRIPTDIR/Data
 cd $SCRIPTDIR/Data
 
 rsync -gloptrunv $SCRIPTDIR/Data/ $USER@terra.ad.unsw.edu.au:~/proyectos/IUCN-RLE/$PROJECTNAME/Data
@@ -48,3 +50,11 @@ unzip -u $SCRIPTDIR/Data/VEGMAP2018_AEA_16082019Final.zip -d $SCRIPTDIR/Data/
 
 mv ~/Downloads/wetransfer_moz_ecosystem_map_w_rle_results_01mar2021-cpg_2022-09-15_0957.zip $SCRIPTDIR/Data/Moz
 unzip -u $SCRIPTDIR/Data/Moz/wetransfer_moz_ecosystem_map_w_rle_results_01mar2021-cpg_2022-09-15_0957.zip -d $SCRIPTDIR/Data/Moz
+
+## this was created/used once for the typology website, we are using it here only for illustration
+#Data/EEZ_land_union_v3_202003/
+
+## MEOW
+mkdir -p $SCRIPTDIR/Data/MEOW
+unzip -u /opt/gisdata/ecoregions/global/MEOW/MEOW_FINAL.zip -d $SCRIPTDIR/Data/MEOW
+

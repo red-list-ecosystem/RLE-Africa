@@ -54,12 +54,20 @@ mada.ecos %<>% tibble()
 #shpinfo %>% xml_find_first(".//legendlayer") %>% xml_attr("name")
 #shpinfo %>% xml_find_all(".//legendlayer[starts-with(@name,100001)]") %>% xml_attr("name")
 
-mada.ecos %<>% mutate(file=sprintf("Data/Mada/layers/%s.shp",code)) %>% mutate(efile=file.exists(file),mapped_area=set_units(0,"km^2"))
+mada.ecos %<>% mutate(file=sprintf("Data/Mada/layers/%s.shp",code)) %>% mutate(efile=file.exists(file),mapped_area=set_units(0,"km^2"),npols=0,lon=as.numeric(NA),lat=as.numeric(NA))
+
 
 for (j in 1:nrow(mada.ecos)) {
   print(j)
-  area_calc <- mada.ecos %>% slice(j) %>% pull(file) %>% read_sf() %>% st_area %>% set_units("km^2") %>% sum
+  ecosf <- mada.ecos %>% slice(j) %>% pull(file) %>% read_sf() 
+  area_calc <- ecosf %>% st_area %>% set_units("km^2") %>% sum
   mada.ecos[j,"mapped_area"] <- area_calc
+  mada.ecos[j,"npols"] <- nrow(ecosf)
+  xys <- ecosf %>% st_transform(crs="+proj=longlat +datum=WGS84") %>% st_bbox 
+  mada.ecos[j,"lon"] <- (xys[1]+xys[3])/2
+  mada.ecos[j,"lat"] <- (xys[2]+xys[4])/2
 }
+
+
 #require(purrr)
 #mada.ecos %>% select(file) %>% map(~ read_sf(.x) %>% st_area %>% set_units("km^2"))

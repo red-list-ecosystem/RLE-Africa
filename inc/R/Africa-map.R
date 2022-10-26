@@ -11,6 +11,7 @@ lcc_proj <- "+proj=lcc +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +el
 
 Africa <- read_sf("Data/Africa.gpkg") %>% st_transform(crs=lcc_proj)
 
+
 Africa %>% select(featurecla) %>% st_drop_geometry() %>% pull %>% table
 
 Africa %>% select(SUBREGION) %>% plot 
@@ -70,3 +71,45 @@ list(`Southern Africa` = list("NA","ZA","BW","SZ","LS"),
      `Marine areas` = list("LME31", "LME46", "LME47", "LME51", "LME54"))
 
              
+require(magrittr)
+require(tmap)
+
+# Strategic assessments
+
+
+
+g <- st_sfc(st_point(x=c(30.8729,31.4761)),#lake burullus
+            st_point(x=c(46.47416,-20.37449)), # Tapia forest
+            st_point(x=c(-16.49901060022063,13.652516407467148)), # Fathala forest
+            st_point(x=c(18.52,-34.57)), # Cape Flats Sand Fynbos
+            st_point(x=c(12.7,-30)), # Benguela
+            st_point(x=c(-14.7,16)) # Gonakier
+)
+
+Strategic <- st_sf(data.frame(place=c("Lake Burullus","Tapia Forest","Fathala Forest", "Cape Flats Sand Fynbos","Benguela current","Gonakier Forest")),g,crs="+proj=longlat +datum=WGS84") %>% st_transform(crs=st_crs(Africa))
+
+
+
+Africa %<>% 
+  mutate(RLE_progress=case_when(
+    NAME_EN %in% c("Tunisia","Ethiopia", "Ghana", "Ivory Coast", "Senegal", "Cameroon") ~ "To confirm",
+    
+    NAME_EN %in% c("Madagascar","South Africa", "Lesotho") ~ "All ecosystems",
+    NAME_EN %in% c("Democratic Republic of the Congo","Republic of the Congo","Central African Republic", "Gabon", "Equatorial Guinea") ~ "Subset of ecosystems",
+    NAME_EN %in% c("Uganda", "Rwanda", "Angola", "Namibia", "Mozambique", "Botswana", "Malawi") ~ "In progress",
+    TRUE ~ "None",
+  )) %>% mutate(RLE_progress=factor(RLE_progress,levels=c("To confirm","In progress","Subset of ecosystems","All ecosystems")))
+tmap_mode("view")
+tm_shape(Africa  %>% filter(RLE_progress != "None") %>% select(NAME_EN,RLE_progress)) +
+  tm_polygons(col="RLE_progress")
+
+tmap_mode("plot")
+tm_shape(Africa) +
+  tm_borders() +
+  tm_shape(Africa  %>% filter(RLE_progress != "None") %>% select(NAME_EN,RLE_progress)) +
+  tm_polygons(col="RLE_progress", palette = "Oranges") + #+ tm_text('NAME_EN',size="AREA")
+  tm_shape(Strategic) + tm_text('place',size=.8) + tm_dots(size=.5) + tm_layout(legend.position = c("left","bottom"))
+
+
+
+                
