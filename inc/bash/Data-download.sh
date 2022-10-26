@@ -1,4 +1,5 @@
-mkdir -p $SCRIPTDIR/Data
+source env/project-env.sh 
+mkdir -p $SCRIPTDIR/Data/Moz
 cd $SCRIPTDIR/Data
 
 rsync -gloptrunv $SCRIPTDIR/Data/ $USER@terra.ad.unsw.edu.au:~/proyectos/IUCN-RLE/$PROJECTNAME/Data
@@ -44,3 +45,6 @@ unzip -u $SCRIPTDIR/Data/Congo/Congo.zip -d $SCRIPTDIR/Data/Congo
 unzip -u $SCRIPTDIR/Data/Mada/Madagascar.zip -d $SCRIPTDIR/Data/Mada
 
 unzip -u $SCRIPTDIR/Data/VEGMAP2018_AEA_16082019Final.zip -d $SCRIPTDIR/Data/
+
+mv ~/Downloads/wetransfer_moz_ecosystem_map_w_rle_results_01mar2021-cpg_2022-09-15_0957.zip $SCRIPTDIR/Data/Moz
+unzip -u $SCRIPTDIR/Data/Moz/wetransfer_moz_ecosystem_map_w_rle_results_01mar2021-cpg_2022-09-15_0957.zip -d $SCRIPTDIR/Data/Moz

@@ -1,5 +1,7 @@
 # conda deactivate
-# python3.9 ../calculate-hist.py
+# cd Data
+# python3.9 ../inc/python/calculate-hist.py
+
 from osgeo import gdal
 from osgeo import ogr, osr
 import os
@@ -30,7 +32,11 @@ sql = "SELECT OBJECTID,featurecla,FORMAL_EN,geom FROM all_territories WHERE OBJE
 
 # Clip the input Raster
 for arch in os.listdir():
-  if arch.endswith(".tif") and arch not in "F1_7_Large_rivers.tif":
+  if arch.endswith(".tif") and \
+  arch not in ("F1_7_Large_rivers.tif","Terrestrial_reclass.tif","Terrestrial_reclass_proj.tif") and \
+  not arch.endswith('_biome.tif') and \
+  not arch.endswith('_biomes.tif') and \
+  not arch.endswith('_biome_noice.tif'):
     print(arch)
     code=re.sub('([MSTF]+[0-9]+)_([0-9]+)_[A-Za-z_.]+','\\1.\\2',arch)
     gtif = gdal.Open(arch)
@@ -38,6 +44,7 @@ for arch in os.listdir():
     rhist = srcband.GetDefaultHistogram( )
     totalmajor=rhist[3][1]
     totalminor=rhist[3][2]
+    totalboth=totalmajor+totalminor
     gtif.ClearStatistics()
     gtif=None
     #
@@ -60,6 +67,7 @@ for arch in os.listdir():
         gtif.ClearStatistics()
         gtif=None
         if major>0 or minor>0:
+          both=(major+minor)/totalboth
           if totalmajor>0:
             major=major/totalmajor
           if totalminor>0:
@@ -69,10 +77,11 @@ for arch in os.listdir():
             'FORMAL_EN':record['FORMAL_EN'],
             'code':code,
             'major':major,
-            'minor':minor}
+            'minor':minor,
+            'both':both}
           newrecords.append(newrecord)
       with open(output, 'w') as fout:
-        columns = ['OBJECTID', 'FORMAL_EN', 'code','major','minor']
+        columns = ['OBJECTID', 'FORMAL_EN', 'code','major','minor','both']
         writer = csv.DictWriter(fout, fieldnames=columns)
         writer.writeheader()
         for key in newrecords:

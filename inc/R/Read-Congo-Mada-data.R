@@ -4,6 +4,16 @@ Congo <- read.dbf(sprintf("Data/Congo/Congo_Basin_Forest_Ecosystems.tif.vat.dbf"
 head(Congo)
 
 
+#Mozambique
+require(sf)
+require(units)
+moz <- read_sf("Data/Moz/Moz_ecosystem_map_w_RLE_results_01Mar2021.shp")
+moz %>% slice(1)
+
+moz %>% mutate(mapped_area=st_area(geometry) %>% set_units("km^2")) %>% st_drop_geometry %>% group_by(IUCN_Funct) %>% summarise(n=n_distinct(Name),category=paste(unique(Overall__1),collapse=";"), mapped_area=sum(mapped_area)) -> moz_list
+
+moz_list
+
 #South Africa
 require(sf)
 za <- read_sf("Data/VEGMAP2018_Final.gdb")

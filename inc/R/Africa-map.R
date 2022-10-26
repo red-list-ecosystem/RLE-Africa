@@ -19,19 +19,45 @@ myMergedData <- vroom(dir("Data/areas-per-country/",full.names=T))
 
 myMergedData %>% 
   mutate(code=gsub("([MFTS0-9\\.]+)-[a-z_.]+","\\1",code)) %>%
-  group_by(code) %>% summarise(countries=n_distinct(OBJECTID),major=sum(major)*100,minor=sum(minor)*100) %>% mutate(biome=gsub("([MFTS0-9]+).[0-9]+","\\1",code)) -> DataEFGs
+  group_by(code) %>% summarise(countries=n_distinct(OBJECTID),major=sum(major)*100,minor=sum(minor)*100,both=sum(both)*100) %>% mutate(biome=gsub("([MFTS0-9]+).[0-9]+","\\1",code)) -> DataEFGs
 
-DataEFGs %>% arrange(desc(major)) 
+DataEFGs %>% filter(!biome %in% c("M2","M3")) %>% arrange(desc(major)) 
+
+DataEFGs %>% filter(!biome %in% c("M2","M3"))  %>% group_by(biome) %>% summarise(EFGs=n_distinct(code)) %>% arrange(desc(EFGs)) 
 
 ggplot(Africa, aes(colour=SUBREGION,fill=SUBREGION %in% "Marine area")) + geom_sf() + theme_light() + theme(legend.position="None") + scale_fill_manual(values=c("lightgrey","aliceblue")) + 
   geom_sf_text(  aes(label = ISO_A2)) + geom_sf(data=Africa %>% filter(ISO_A2 %in% c("LY")),fill='darkgrey')
 
-slc.biomes <- c(sprintf("T%s",1:6),"TF1")
+DataEFGs %>% distinct(biome) %>% pull
+slc.biomes <- sprintf("T%s",1:6)
+slc.biomes <- c(sprintf("F%s",1:2),"TF1","S1","SF1")
+slc.biomes <- c(sprintf("MT%s",1:2),"MFT1","M1","FM1","SM1")
 p <- ggplot(DataEFGs %>% filter(major>0,biome %in% slc.biomes), aes(x=code, y=major, fill=biome)) + geom_bar(width=1, stat='identity') + theme_light() 
 #+ scale_fill_gradient(low='red', high='white', limits=c(5,40)) + theme(axis.title.y=element_text(angle=0))
-p + theme(axis.text.x = element_text(angle=45, vjust = 1, hjust=1)) + xlab("Ecosystem Functional Group") + ylab("% of global major distribution")
+p + theme(axis.text.x = element_text(angle=45, vjust = 1, hjust=1)) + xlab("Ecosystem Functional Group") + ylab("% of global major distribution") + geom_errorbar(aes(ymin=major,ymax=both))
 
-p + coord_polar() + labs(title="Ecosystems in Africa", x="Ecosystem Functional Group",y="% of global major distribution",fill="Biome")
+p + coord_polar() + labs(title="Ecosystems in Africa", x="Ecosystem Functional Group",y="% of global major distribution",fill="Biome") + geom_errorbar(aes(ymin=major,ymax=both))
+
+coord_plot <- function(dat,flt) {
+  p <- ggplot(dat %>% filter(major>0,biome %in% flt)) + 
+    geom_bar(aes(x=code, y=major, fill=biome), width=1, stat='identity',alpha=.6) + 
+    geom_bar(aes(x=code, y=both, fill=biome),width=1, stat='identity',alpha=.6) + 
+    theme_light() + 
+    geom_errorbar(aes(x=code, ymin=major,ymax=both))
+  return(p)
+}
+
+coord_plot(DataEFGs,sprintf("T%s",1:6)) + coord_polar() + 
+  labs(title="Terrestrial realm", x="Ecosystem Functional Group",y="% of global major distribution",fill="Biome") 
+coord_plot(DataEFGs,c(sprintf("F%s",1:2),"TF1","S1","SF1")) + 
+  coord_polar() + 
+  labs(title="Freshwater and Subterranean (+ transitions)", x="Ecosystem Functional Group",y="% of global major distribution",fill="Biome") 
+coord_plot(DataEFGs,c(sprintf("MT%s",1:2),"MFT1","M1","FM1","SM1"))+ 
+  coord_polar() + 
+  labs(title="Marine (+ transitions)", x="Ecosystem Functional Group",y="% of global major distribution",fill="Biome") 
+
+
+
 #Hillary suggest that Mozambique Malawi and Zimbawe and Zambia should be southern africa
 #this does not work very well
 #st_snap_to_grid(size = 0.001) %>% st_make_valid() %>% 

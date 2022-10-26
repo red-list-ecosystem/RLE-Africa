@@ -53,9 +53,19 @@ mada.ecos %>% filter(is.na(efg_code))
 
 mada.ecos %>% group_by(efg_code) %>% summarise(mapped_area=sum(mapped_area))
 
+require(stringr)
 assessments_africa %>% filter(asm_id %in% "Shapiro_CongoBasin_2020") %>% mutate(Code=str_replace(eco_id,"Shapiro_CongoBasin_2020_","") %>% as.numeric) -> Congo_xwalk
-Congo %>% left_join(Congo_xwalk) %>% select(Orig_Class,New_Class,eco_name,overall_risk_category,efg_code, Area_ha) %>% unique -> Congo_list
 
-Congo_list %>% mutate(efg_code=if_else(is.na(eco_name),"T4.2",efg_code),Area_ha=set_units(Area_ha,'ha')) %>% group_by(efg_code) %>% summarise(n=n(),mapped_area=sum(Area_ha) %>% set_units("km^2"),category=paste(unique(overall_risk_category),collapse=";"))
+Congo %>% left_join(Congo_xwalk) %>% select(Orig_Class,New_Class,Forest_Typ,eco_name,overall_risk_category,efg_code, Area_ha) %>% unique -> Congo_list
 
-                                                                                
+Congo_list %>% 
+  mutate(efg_code=case_when(
+    is.na(eco_name) ~ "T4.2",
+    grepl("Montane Dense",New_Class) ~ "T1.3", 
+    grepl("Evergreen",Forest_Typ) ~ "T1.1",
+    grepl("Deciduous",Forest_Typ) ~ "T1.2", 
+    TRUE~efg_code),
+         Area_ha=set_units(Area_ha,'ha')) %>% group_by(efg_code) %>% summarise(n=n(),mapped_area=sum(Area_ha) %>% set_units("km^2"),category=paste(unique(overall_risk_category),collapse=";"))
+
+
+head(Congo_list)      
