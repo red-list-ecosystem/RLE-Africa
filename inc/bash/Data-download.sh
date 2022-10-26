@@ -66,3 +66,7 @@ chmod 744 Library/ -R
 ogrinfo Library/Project\ data\ deliverables/Geodatabases/North\ East\ Atlantic\ Sea\ geodatabase\ v03/ 'NEA geodatabase' | less
 ofrinfo Library/Project\ data\ deliverables/Geodatabases/Terrestrial\ geodatabase/RDB_Final_Maps_Terrestrial.shp
 
+## South Africa marine
+mkdir -p $SCRIPTDIR/Data/ZAF
+unzip NBA2018_Marine_ThreatStatus_ProtectionLevel.zip -d $SCRIPTDIR/Data/ZAF
+

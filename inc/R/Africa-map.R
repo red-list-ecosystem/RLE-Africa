@@ -84,7 +84,7 @@ g <- st_sfc(st_point(x=c(30.8729,31.4761)),#lake burullus
             st_point(x=c(18.52,-34.57)), # Cape Flats Sand Fynbos
             st_point(x=c(12.7,-30)), # Benguela
             st_point(x=c(-14.7,16)), # Gonakier
-            st_point(x=c(45.138333,-12.843056)), # Mayotte
+            st_point(x=c(45.138333,-12.843056)) # Mayotte
 )
 
 Strategic <- st_sf(data.frame(place=c("Lake Burullus","Tapia Forest","Fathala Forest", "Cape Flats Sand Fynbos","Benguela current","Gonakier Forest","Mayotte Mangroves")),g,crs="+proj=longlat +datum=WGS84") %>% st_transform(crs=st_crs(Africa))
@@ -93,27 +93,70 @@ Strategic <- st_sf(data.frame(place=c("Lake Burullus","Tapia Forest","Fathala Fo
 
 Africa %<>% 
   mutate(RLE_progress=case_when(
-    NAME_EN %in% c("Madagascar","South Africa") ~ "All ecosystems",
+    NAME_EN %in% c("Madagascar","South Africa","Mozambique") ~ "All ecosystems",
     NAME_EN %in% c("Ethiopia","Uganda","Botswana","Ghana","Malawi") ~ "Preliminary/Rapid",
     NAME_EN %in% c("Democratic Republic of the Congo","Republic of the Congo","Central African Republic", "Gabon", "Equatorial Guinea") ~ "Subset of ecosystems",
     NAME_EN %in% c("Tunisia", "Rwanda") ~ "In progress",
-    NAME_EN %in% c("Liberia","Sierra Leone","Equatorial Guinea") ~ "All ecosystems", # Santerre's work
+    NAME_EN %in% c("Liberia","Sierra Leone","Guinea") ~ "All ecosystems", # Santerre's work
     #NAME_EN %in% c(  "Ivory Coast", "Senegal", "Cameroon", "Lesotho","Angola") ~ "To confirm",
     TRUE ~ "None",
-  )) %>% mutate(RLE_progress=factor(RLE_progress,levels=c("To confirm","In progress","Subset of ecosystems","All ecosystems")))
+  )) %>% mutate(RLE_progress=factor(RLE_progress,levels=c("In progress","Preliminary/Rapid","Subset of ecosystems","All ecosystems")))
+
 tmap_mode("view")
-tm_shape(Africa  %>% filter(RLE_progress != "None") %>% select(NAME_EN,RLE_progress)) +
+tm_shape(Africa   %>% select(NAME_EN,RLE_progress)) +
   tm_polygons(col="RLE_progress")
 
+
+Africa.land <- Africa %>% filter(!featurecla %in% "Marine area") %>% st_union
+meow <- read_sf("Data/MEOW/MEOW/meow_ecos.shp")
+WIO <- meow %>% filter(PROVINCE %in% "Western Indian Ocean") %>% st_union 
+WIO <- WIO %>% st_transform(crs=st_crs(Africa)) %>% st_difference(Africa.land)
+
+EEZ <- read_sf("Data/EEZ_land_union_v3_202003/EEZ_Land_v3_202030.shp")
+tmap_mode("view")
+tm_shape(EEZ) + tm_polygons()
+
+EEZ.slc <- EEZ %>% filter(grepl("South Africa|Madagascar",UNAME)) # should we include Prince Edward Islands?
+
+
+EURLH.mar <- read_sf("Data/EURLH/Library/Project\ data\ deliverables/Geodatabases/North\ East\ Atlantic\ Sea\ geodatabase\ v03/", 'NEA geodatabase')
+EURLH.ter <- read_sf("Data/EURLH/Library/Project\ data\ deliverables/Geodatabases/Terrestrial\ geodatabase", 'RDB_Final_Maps_Terrestrial')
+
+EEZ.EU <- EEZ %>% filter(grepl("Canary Islands|Madeira",UNAME)) %>% st_transform(crs=st_crs(EURLH.mar))
+  
+EURLH.mar <- EURLH.mar %>% st_intersection(EEZ.EU) %>% st_union  
+EURLH.ter <- EURLH.ter %>% st_intersection(EEZ.EU) %>% st_union 
+
+#South Africa
+#
+SA_mar <- read_sf("Data/ZAF/NBA2018_Marine_ThreatStatus_ProtectionLevel.shp")
+SA_mar %>% st_geometry() %>% plot # does not include Prince Edward Islands
+
+#tmap_mode("view")
+#tm_shape(SA_mar) + tm_polygons() # problems with some polygons
+
+bls <- RColorBrewer::brewer.pal(3,"Blues")
+ogs <- RColorBrewer::brewer.pal(4,"Oranges")
+
+
 tmap_mode("plot")
-tm_shape(Africa) +
-  tm_borders() +
+tm_shape(Africa.land) +
+  tm_fill(col='grey88') +
+  tm_shape(Africa %>% filter(!featurecla %in% "Marine area")) +
+  tm_borders(col='grey99') +
+  tm_shape(WIO) + tm_fill(bls[2]) +
+  tm_shape(EEZ.slc) + tm_fill(col=bls[3]) +
   tm_shape(Africa  %>% filter(RLE_progress != "None") %>% select(NAME_EN,RLE_progress)) +
-  tm_polygons(col="RLE_progress", palette = "Oranges") + #+ tm_text('NAME_EN',size="AREA")
-  tm_shape(Strategic) + tm_text('place',size=.8) + tm_dots(size=.5) + tm_layout(legend.position = c("left","bottom"))
+  tm_polygons(col="RLE_progress", palette = "Oranges",title="Systematic Assessments\nTerrestrial/Freshwater") + #+ tm_text('NAME_EN',size="AREA")
+  tm_shape(Strategic) + tm_text('place',size=.7,just=-.1) + tm_dots(size=.5) + 
+  tm_layout(legend.position = c("left","bottom")) +
+  tm_add_legend(type="fill",col=bls[2:3],title="Marine",labels=c('Subset of ecosystems','All ecosystems')) +
+  tm_add_legend(type="symbol",col='black',title="Strategic assessment",labels=c('Locations')) +
+  tm_shape(EEZ.EU) + tm_fill(col=bls[3]) +
+  tm_shape(EURLH.ter) + tm_polygons(col=ogs[4]) 
 
-
+## [ ] Marine areas
 ## [x] add /or not/ Senterre
 ## [x] Check Andrew's Email
-## [ ] Add Mayotte
-## [ ] Canary islands / EU RLH marine/terrestrial
+## [x] Add Mayotte
+## [?] Canary islands / EU RLH marine/terrestrial
