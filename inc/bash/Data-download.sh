@@ -45,3 +45,8 @@ unzip -u $SCRIPTDIR/Data/Congo/Congo.zip -d $SCRIPTDIR/Data/Congo
 unzip -u $SCRIPTDIR/Data/Mada/Madagascar.zip -d $SCRIPTDIR/Data/Mada
 
 unzip -u $SCRIPTDIR/Data/VEGMAP2018_AEA_16082019Final.zip -d $SCRIPTDIR/Data/
+
+## this was created/used once for the typology website, we are using it here only for illustration
+#Data/EEZ_land_union_v3_202003/
+mkdir -p $SCRIPTDIR/Data/MEOW
+unzip -u /opt/gisdata/ecoregions/global/MEOW/MEOW_FINAL.zip -d $SCRIPTDIR/Data/MEOW
