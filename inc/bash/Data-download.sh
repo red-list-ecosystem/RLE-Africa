@@ -58,3 +58,11 @@ unzip -u $SCRIPTDIR/Data/Moz/wetransfer_moz_ecosystem_map_w_rle_results_01mar202
 mkdir -p $SCRIPTDIR/Data/MEOW
 unzip -u /opt/gisdata/ecoregions/global/MEOW/MEOW_FINAL.zip -d $SCRIPTDIR/Data/MEOW
 
+## EU RLH database
+mkdir -p $SCRIPTDIR/Data/EURLH
+unzip -u /opt/gisdata/ecosystems/EUplus-RLH/EURLHDB.zip -d $SCRIPTDIR/Data/EURLH
+cd $SCRIPTDIR/Data/EURLH
+chmod 744 Library/ -R
+ogrinfo Library/Project\ data\ deliverables/Geodatabases/North\ East\ Atlantic\ Sea\ geodatabase\ v03/ 'NEA geodatabase' | less
+ofrinfo Library/Project\ data\ deliverables/Geodatabases/Terrestrial\ geodatabase/RDB_Final_Maps_Terrestrial.shp
+

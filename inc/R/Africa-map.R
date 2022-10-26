@@ -83,20 +83,22 @@ g <- st_sfc(st_point(x=c(30.8729,31.4761)),#lake burullus
             st_point(x=c(-16.49901060022063,13.652516407467148)), # Fathala forest
             st_point(x=c(18.52,-34.57)), # Cape Flats Sand Fynbos
             st_point(x=c(12.7,-30)), # Benguela
-            st_point(x=c(-14.7,16)) # Gonakier
+            st_point(x=c(-14.7,16)), # Gonakier
+            st_point(x=c(45.138333,-12.843056)), # Mayotte
 )
 
-Strategic <- st_sf(data.frame(place=c("Lake Burullus","Tapia Forest","Fathala Forest", "Cape Flats Sand Fynbos","Benguela current","Gonakier Forest")),g,crs="+proj=longlat +datum=WGS84") %>% st_transform(crs=st_crs(Africa))
+Strategic <- st_sf(data.frame(place=c("Lake Burullus","Tapia Forest","Fathala Forest", "Cape Flats Sand Fynbos","Benguela current","Gonakier Forest","Mayotte Mangroves")),g,crs="+proj=longlat +datum=WGS84") %>% st_transform(crs=st_crs(Africa))
 
 
 
 Africa %<>% 
   mutate(RLE_progress=case_when(
-    NAME_EN %in% c("Tunisia","Ethiopia", "Ghana", "Ivory Coast", "Senegal", "Cameroon") ~ "To confirm",
-    
-    NAME_EN %in% c("Madagascar","South Africa", "Lesotho") ~ "All ecosystems",
+    NAME_EN %in% c("Madagascar","South Africa") ~ "All ecosystems",
+    NAME_EN %in% c("Ethiopia","Uganda","Botswana","Ghana","Malawi") ~ "Preliminary/Rapid",
     NAME_EN %in% c("Democratic Republic of the Congo","Republic of the Congo","Central African Republic", "Gabon", "Equatorial Guinea") ~ "Subset of ecosystems",
-    NAME_EN %in% c("Uganda", "Rwanda", "Angola", "Namibia", "Mozambique", "Botswana", "Malawi") ~ "In progress",
+    NAME_EN %in% c("Tunisia", "Rwanda") ~ "In progress",
+    NAME_EN %in% c("Liberia","Sierra Leone","Equatorial Guinea") ~ "All ecosystems", # Santerre's work
+    #NAME_EN %in% c(  "Ivory Coast", "Senegal", "Cameroon", "Lesotho","Angola") ~ "To confirm",
     TRUE ~ "None",
   )) %>% mutate(RLE_progress=factor(RLE_progress,levels=c("To confirm","In progress","Subset of ecosystems","All ecosystems")))
 tmap_mode("view")
@@ -111,5 +113,7 @@ tm_shape(Africa) +
   tm_shape(Strategic) + tm_text('place',size=.8) + tm_dots(size=.5) + tm_layout(legend.position = c("left","bottom"))
 
 
-
-                
+## [x] add /or not/ Senterre
+## [x] Check Andrew's Email
+## [ ] Add Mayotte
+## [ ] Canary islands / EU RLH marine/terrestrial
