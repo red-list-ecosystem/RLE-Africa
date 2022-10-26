@@ -58,4 +58,12 @@ Congo %>% left_join(Congo_xwalk) %>% select(Orig_Class,New_Class,eco_name,overal
 
 Congo_list %>% mutate(efg_code=if_else(is.na(eco_name),"T4.2",efg_code),Area_ha=set_units(Area_ha,'ha')) %>% group_by(efg_code) %>% summarise(n=n(),mapped_area=sum(Area_ha) %>% set_units("km^2"),category=paste(unique(overall_risk_category),collapse=";"))
 
-                                                                                
+require(xml2)
+
+cape_flats <- read_xml(sprintf("%s/backup/databases/tmp/XML_v1.0/Strategic/Keith_CapeFlatsSandFynbos_2013_1.xml",Sys.getenv("HOME")))
+cape_flats %>% xml_find_all(".//Case-Study-Name") %>% xml_text()
+cape_flats %>% xml_find_all(".//Spatial-point") 
+
+gonakier <- read_xml(sprintf("%s/backup/databases/XML_v1.0/Strategic/Keith_GonakierForest_2013_1.xml",Sys.getenv("HOME")))
+gonakier %>% xml_find_all(".//Case-Study-Name") %>% xml_text()
+gonakier %>% xml_find_all(".//Spatial-point") 

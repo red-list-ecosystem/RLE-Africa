@@ -1,3 +1,4 @@
+source env/project-env.sh 
 mkdir -p $SCRIPTDIR/Data
 cd $SCRIPTDIR/Data
 

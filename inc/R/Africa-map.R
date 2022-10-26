@@ -48,6 +48,22 @@ list(`Southern Africa` = list("NA","ZA","BW","SZ","LS"),
 require(magrittr)
 require(tmap)
 
+# Strategic assessments
+
+
+
+g <- st_sfc(st_point(x=c(30.8729,31.4761)),#lake burullus
+            st_point(x=c(46.47416,-20.37449)), # Tapia forest
+            st_point(x=c(-16.49901060022063,13.652516407467148)), # Fathala forest
+            st_point(x=c(18.52,-34.57)), # Cape Flats Sand Fynbos
+            st_point(x=c(12.7,-30)), # Benguela
+            st_point(x=c(-14.7,16)) # Gonakier
+)
+
+Strategic <- st_sf(data.frame(place=c("Lake Burullus","Tapia Forest","Fathala Forest", "Cape Flats Sand Fynbos","Benguela current","Gonakier Forest")),g,crs="+proj=longlat +datum=WGS84") %>% st_transform(crs=st_crs(Africa))
+
+
+
 Africa %<>% 
   mutate(RLE_progress=case_when(
     NAME_EN %in% c("Tunisia","Ethiopia", "Ghana", "Ivory Coast", "Senegal", "Cameroon") ~ "To confirm",
@@ -66,13 +82,8 @@ tm_shape(Africa) +
   tm_borders() +
   tm_shape(Africa  %>% filter(RLE_progress != "None") %>% select(NAME_EN,RLE_progress)) +
   tm_polygons(col="RLE_progress", palette = "Oranges") + #+ tm_text('NAME_EN',size="AREA")
-  tm_shape(LakeBurullus) + tm_dots(size=.8)
+  tm_shape(Strategic) + tm_text('place',size=.8) + tm_dots(size=.5) + tm_layout(legend.position = c("left","bottom"))
 
 
 
-#lake burullus
-g <- st_sfc(st_point(x=c(30.8729,31.4761 )))
-
-LakeBurullus <- st_sf(data.frame(place="Lake Burullus"),g,crs="+proj=longlat +datum=WGS84") %>% st_transform(crs=st_crs(Africa))
-     
                 
