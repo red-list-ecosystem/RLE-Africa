@@ -87,9 +87,10 @@ g <- st_sfc(st_point(x=c(30.8729,31.4761)),#lake burullus
             st_point(x=c(45.138333,-12.843056)) # Mayotte
 )
 
-Strategic <- st_sf(data.frame(place=c("Lake Burullus","Tapia Forest","Fathala Forest", "Cape Flats Sand Fynbos","Benguela current","Gonakier Forest","Mayotte Mangroves")),g,crs="+proj=longlat +datum=WGS84") %>% st_transform(crs=st_crs(Africa))
+Strategic <- st_sf(data.frame(place=c("Burullus Protected Area\n(wetland, sand plain, salt marshes)","Tapia Forest","Fathala Forest", "Cape Flats Sand Fynbos","Benguela current","Gonakier Forest","Mayotte Mangroves")),g,crs="+proj=longlat +datum=WGS84") %>% st_transform(crs=st_crs(Africa))
 
 
+Morocco.whole <- Africa %>% filter(NAME_EN %in% c("Western Sahara","Morocco")) %>% st_union
 
 Africa %<>% 
   mutate(RLE_progress=case_when(
@@ -97,8 +98,9 @@ Africa %<>%
     NAME_EN %in% c("Ethiopia","Uganda","Botswana","Ghana","Malawi") ~ "Preliminary/Rapid",
     NAME_EN %in% c("Democratic Republic of the Congo","Republic of the Congo","Central African Republic", "Gabon", "Equatorial Guinea") ~ "Subset of ecosystems",
     NAME_EN %in% c("Tunisia", "Rwanda") ~ "In progress",
-    NAME_EN %in% c("Liberia","Sierra Leone","Guinea") ~ "All ecosystems", # Santerre's work
-    #NAME_EN %in% c(  "Ivory Coast", "Senegal", "Cameroon", "Lesotho","Angola") ~ "To confirm",
+    NAME_EN %in% c("Liberia","Sierra Leone","Guinea") ~ "In progress", # Santerre's work
+    #NAME_EN %in% c(  "Namibia", "Cameroon","Angola") ~ "To confirm", # early stages according to provita inventory
+    NAME_EN %in% c(  "Ivory Coast", "Senegal") ~ "In progress", ## Provita spreadsheet
     TRUE ~ "None",
   )) %>% mutate(RLE_progress=factor(RLE_progress,levels=c("In progress","Preliminary/Rapid","Subset of ecosystems","All ecosystems")))
 
@@ -140,9 +142,12 @@ ogs <- RColorBrewer::brewer.pal(4,"Oranges")
 
 
 tmap_mode("plot")
-tm_shape(Africa.land) +
+tm_shape(Africa.land,
+         ylim=c(-4134891,4187812),
+         xlim=c(-5261966,4751028)) +
   tm_fill(col='grey88') +
-  tm_shape(Africa %>% filter(!featurecla %in% "Marine area")) +
+  tm_shape(Africa %>% filter(!featurecla %in% "Marine area", 
+                             !NAME_EN %in% c("Western Sahara","Morocco"))) +
   tm_borders(col='grey99') +
   tm_shape(WIO) + tm_fill(bls[2]) +
   tm_shape(EEZ.slc) + tm_fill(col=bls[3]) +
