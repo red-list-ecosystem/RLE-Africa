@@ -14,10 +14,13 @@ moz %>% mutate(mapped_area=st_area(geometry) %>% set_units("km^2")) %>% st_drop_
 
 moz_list
 
+sum(moz_list$n)
+
 #South Africa
 require(sf)
 za <- read_sf("Data/VEGMAP2018_Final.gdb")
 za %>% slice(1)
+za %>% st_drop_geometry() %>% group_by(NBA2018_RLE_Status) %>% summarise(biomes=n_distinct(BIOME_18),ecos=n_distinct(Name_18))
 
 za %>% mutate(mapped_area=st_area(Shape) %>% set_units("km^2")) %>% st_drop_geometry %>% group_by(BIOME_18,Name_18) %>% summarise(category=paste(unique(NBA2018_RLE_Status),collapse=";"), mapped_area=sum(mapped_area)) -> za_list
 
@@ -71,3 +74,6 @@ for (j in 1:nrow(mada.ecos)) {
 
 #require(purrr)
 #mada.ecos %>% select(file) %>% map(~ read_sf(.x) %>% st_area %>% set_units("km^2"))
+
+
+SA_mar %>% st_drop_geometry() %>% group_by(RLE_2018b) %>% summarise(eco=n_distinct(MarineEco_))

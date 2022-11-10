@@ -74,20 +74,6 @@ list(`Southern Africa` = list("NA","ZA","BW","SZ","LS"),
 require(magrittr)
 require(tmap)
 
-# Strategic assessments
-
-
-
-g <- st_sfc(st_point(x=c(30.8729,31.4761)),#lake burullus
-            st_point(x=c(46.47416,-20.37449)), # Tapia forest
-            st_point(x=c(-16.49901060022063,13.652516407467148)), # Fathala forest
-            st_point(x=c(18.52,-34.57)), # Cape Flats Sand Fynbos
-            st_point(x=c(12.7,-30)), # Benguela
-            st_point(x=c(-14.7,16)), # Gonakier
-            st_point(x=c(45.138333,-12.843056)) # Mayotte
-)
-
-Strategic <- st_sf(data.frame(place=c("Burullus Protected Area\n(wetland, sand plain, salt marshes)","Tapia Forest","Fathala Forest", "Cape Flats Sand Fynbos","Benguela current","Gonakier Forest","Mayotte Mangroves")),g,crs="+proj=longlat +datum=WGS84") %>% st_transform(crs=st_crs(Africa))
 
 
 Morocco.whole <- Africa %>% filter(NAME_EN %in% c("Western Sahara","Morocco")) %>% st_union
@@ -115,8 +101,8 @@ WIO <- meow %>% filter(PROVINCE %in% "Western Indian Ocean") %>% st_union
 WIO <- WIO %>% st_transform(crs=st_crs(Africa)) %>% st_difference(Africa.land)
 
 EEZ <- read_sf("Data/EEZ_land_union_v3_202003/EEZ_Land_v3_202030.shp")
-tmap_mode("view")
-tm_shape(EEZ) + tm_polygons()
+#tmap_mode("view")
+#tm_shape(EEZ) + tm_polygons()
 
 EEZ.slc <- EEZ %>% filter(grepl("South Africa|Madagascar",UNAME)) # should we include Prince Edward Islands?
 
@@ -125,14 +111,19 @@ EURLH.mar <- read_sf("Data/EURLH/Library/Project\ data\ deliverables/Geodatabase
 EURLH.ter <- read_sf("Data/EURLH/Library/Project\ data\ deliverables/Geodatabases/Terrestrial\ geodatabase", 'RDB_Final_Maps_Terrestrial')
 
 EEZ.EU <- EEZ %>% filter(grepl("Canary Islands|Madeira",UNAME)) %>% st_transform(crs=st_crs(EURLH.mar))
-  
-EURLH.mar <- EURLH.mar %>% st_intersection(EEZ.EU) %>% st_union  
-EURLH.ter <- EURLH.ter %>% st_intersection(EEZ.EU) %>% st_union 
+
+EURLH.mar.qry <- EURLH.mar %>% st_intersection(EEZ.EU)
+EURLH.ter.qry <- EURLH.ter %>% st_intersection(EEZ.EU)
+#distinct(EURLH.mar.qry,Habitat_na) 
+#distinct(EURLH.ter.qry,TYPE_NAME)
+
+EURLH.mar <- EURLH.mar.qry %>% st_union  
+EURLH.ter <- EURLH.ter.qry %>% st_union 
 
 #South Africa
 #
 SA_mar <- read_sf("Data/ZAF/NBA2018_Marine_ThreatStatus_ProtectionLevel.shp")
-SA_mar %>% st_geometry() %>% plot # does not include Prince Edward Islands
+#SA_mar %>% st_geometry() %>% plot # does not include Prince Edward Islands
 
 #tmap_mode("view")
 #tm_shape(SA_mar) + tm_polygons() # problems with some polygons
@@ -140,6 +131,18 @@ SA_mar %>% st_geometry() %>% plot # does not include Prince Edward Islands
 bls <- RColorBrewer::brewer.pal(3,"Blues")
 ogs <- RColorBrewer::brewer.pal(4,"Oranges")
 
+
+# Strategic assessments
+g <- st_sfc(st_point(x=c(30.8729,31.4761)),#lake burullus
+            st_point(x=c(46.47416,-20.37449)), # Tapia forest
+            st_point(x=c(-16.49901060022063,13.652516407467148)), # Fathala forest
+            st_point(x=c(18.52,-34.57)), # Cape Flats Sand Fynbos
+            st_point(x=c(15,-31.5)), # Benguela
+            st_point(x=c(-14.7,16)), # Gonakier
+            st_point(x=c(45.138333,-12.843056)) # Mayotte
+)
+
+Strategic <- st_sf(data.frame(place=c("Burullus Protected Area\n(wetland, sand plain, salt marshes)","Tapia Forest","Fathala Forest", "Cape Flats Sand Fynbos","Benguela current","Gonakier Forest","Mayotte Mangroves")),g,crs="+proj=longlat +datum=WGS84") %>% st_transform(crs=st_crs(Africa))
 
 tmap_mode("plot")
 tm_shape(Africa.land,
