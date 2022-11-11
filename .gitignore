@@ -1,0 +1,6 @@
+Data/
+!Data-download.sh
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
