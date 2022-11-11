@@ -1,4 +1,9 @@
-## This is a Shiny web application
+####
+## IUCN Red List of Ecosystems in Africa
+## J.R. Ferrer-Paris https://github.com/jrfep
+## This is a Shiny web application (in development), showing proportional areas of ecosystem functional groups per region
+####
+
 
 library(shiny)
 library(ggplot2)
@@ -9,9 +14,9 @@ library(lwgeom)
 
 lcc_proj <- "+proj=lcc +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m no_defs"
 
-Africa <- read_sf("Data/Africa.gpkg") %>% st_transform(crs=lcc_proj) 
+Africa <- read_sf("../../Data/Africa.gpkg") %>% st_transform(crs=lcc_proj)
 
-DataEFGs <- vroom(dir("Data/areas-per-country/",full.names=T))  %>% mutate(code=gsub("([MFTS0-9\\.]+)-[a-z_.]+","\\1",code),biome=gsub("([MFTS0-9]+).[0-9]+","\\1",code))
+DataEFGs <- vroom(dir("../../Data/areas-per-country/",full.names=T))  %>% mutate(code=gsub("([MFTS0-9\\.]+)-[a-z_.]+","\\1",code),biome=gsub("([MFTS0-9]+).[0-9]+","\\1",code))
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -19,7 +24,7 @@ ui <- fluidPage(
     # Application title
     titlePanel("IUCN Global Ecosystem Typology in Africa"),
 
-    # Sidebar with a slider input for number of bins 
+    # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
           selectInput("biome", "Choose the biomes:",
@@ -59,7 +64,7 @@ server <- function(input, output) {
       }
     }
   })
-  
+
   filteredData <- reactive({
     if (is.null(input$countries)) {
       DataEFGs %>% filter(biome %in% input$biome) %>% group_by(biome,code) %>% summarise(countries=n_distinct(OBJECTID),major=sum(major)*100,minor=sum(minor)*100)
@@ -68,19 +73,19 @@ server <- function(input, output) {
       DataEFGs %>% filter(biome %in% input$biome,OBJECTID %in% slc) %>% group_by(biome,code) %>% summarise(countries=n_distinct(OBJECTID),major=sum(major)*100,minor=sum(minor)*100)
     }
   })
-  
+
     output$polarPlot <- renderPlot({
       ggplot(filteredData(), aes(x=code, y=major, fill=biome)) + geom_bar(width=1, stat='identity') + theme_light() + coord_polar() + labs(title="Ecosystems in Africa", x="Ecosystem Functional Group",y="% of global major distribution",fill="Biome")
       #ggplot(filteredData(), aes(x=code, y=major, fill=biome)) + geom_bar(width=1, stat='identity') + theme_light()
-      #p 
+      #p
     })
     output$mapPlot <- renderPlot({
       p <- ggplot(Africa, aes(colour=SUBREGION,fill=SUBREGION %in% "Marine area")) + geom_sf() + theme_light() + theme(legend.position="None") + scale_fill_manual(values=c("lightgrey","aliceblue"))
-    
-        p + geom_sf(data=filteredMap(),fill='darkgrey') 
+
+        p + geom_sf(data=filteredMap(),fill='darkgrey')
         #+ geom_sf_text(  aes(label = ISO_A2))
     })
 }
 
-# Run the application 
+# Run the application
 shinyApp(ui = ui, server = server)

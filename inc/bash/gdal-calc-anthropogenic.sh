@@ -1,3 +1,10 @@
+####
+## IUCN Red List of Ecosystems in Africa
+## J.R. Ferrer-Paris https://github.com/jrfep
+## this scripts uses gdal calculator to estimate the distribution of anthropogenic biomes and ecosystem functional groups.
+####
+
+
 cd Data
 gdal_calc.py \
 -A T7_1_Croplands.tif \
@@ -54,15 +61,15 @@ gdal_calc.py \
 gdal_calc.py \
 -A T1_biome.tif -B T2_biome.tif -C T3_biome.tif -D T4_biome.tif \
 -E T5_biome.tif -F T6_biome.tif \
---calc="A+B+C+D+E+F" --outfile T_natural_biomes.tif --type=Int16 --co="COMPRESS=LZW" --overwrite --hideNoData 
+--calc="A+B+C+D+E+F" --outfile T_natural_biomes.tif --type=Int16 --co="COMPRESS=LZW" --overwrite --hideNoData
 
 
 gdal_calc.py \
 -A T1_biome.tif -B T2_biome.tif -C T3_biome.tif -D T4_biome.tif \
 -E T5_biome.tif -F T6_biome_noice.tif -G T7_biome.tif \
---calc="A+B+C+D+E+F+G" --outfile T_all_biomes.tif --type=Int16 --co="COMPRESS=LZW" --overwrite --hideNoData 
+--calc="A+B+C+D+E+F+G" --outfile T_all_biomes.tif --type=Int16 --co="COMPRESS=LZW" --overwrite --hideNoData
 
-## gdal_calc.py -A T_all_biomes.tif -G T7_biome.tif --calc="numpy.where(A>0, 1, 0)+numpy.where(G>0,1,0)" --outfile Terrestrial_reclass.tif --type=Int16 --co="COMPRESS=LZW" --overwrite --NoDataValue=0 
+## gdal_calc.py -A T_all_biomes.tif -G T7_biome.tif --calc="numpy.where(A>0, 1, 0)+numpy.where(G>0,1,0)" --outfile Terrestrial_reclass.tif --type=Int16 --co="COMPRESS=LZW" --overwrite --NoDataValue=0
 
 gdal_calc.py \
 -A T_all_biomes.tif -G T7_biome.tif \
@@ -70,6 +77,6 @@ gdal_calc.py \
 
 [ -e Terrestrial_reclass_proj.tif ] && rm Terrestrial_reclass_proj.tif
 
-gdalwarp -t_srs "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m no_defs" -r near -co "COMPRESS=LZW" Terrestrial_reclass.tif Terrestrial_reclass_proj.tif 
+gdalwarp -t_srs "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m no_defs" -r near -co "COMPRESS=LZW" Terrestrial_reclass.tif Terrestrial_reclass_proj.tif
 
 gdalinfo Terrestrial_reclass_proj.tif -hist

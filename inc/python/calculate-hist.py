@@ -1,3 +1,10 @@
+####
+## IUCN Red List of Ecosystems in Africa
+## J.R. Ferrer-Paris https://github.com/jrfep
+## this python script uses functions from gdal to summarise histogram information from the GeoTiff files
+####
+
+# Usage:
 # conda deactivate
 # cd Data
 # python3.9 ../inc/python/calculate-hist.py
@@ -8,7 +15,7 @@ import os
 import re
 import csv
 #import json
-    
+
 #  ogrinfo WB_Boundaries_GeoJSON_lowres/WB_countries_Admin0_lowres.geojson -sql "SELECT FID,FORMAL_EN FROM WB_countries_Admin0_lowres WHERE REGION_UN='Africa'" -geom=no
 inCountries = "Africa.gpkg"
 inDriver = ogr.GetDriverByName("GPKG")
@@ -87,4 +94,3 @@ for arch in os.listdir():
         for key in newrecords:
             writer.writerow(key)
         #json.dump(newrecords, fout)
-
