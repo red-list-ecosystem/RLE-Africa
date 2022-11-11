@@ -73,11 +73,11 @@ head(Congo_list)
 
 require(xml2)
 
-cape_flats <- read_xml(sprintf("%s/backup/databases/tmp/XML_v1.0/Strategic/Keith_CapeFlatsSandFynbos_2013_1.xml",Sys.getenv("HOME")))
+cape_flats <- read_xml(sprintf("%s/respaldo/databases/XML_v1.0/Strategic/Keith_CapeFlatsSandFynbos_2013_1.xml",Sys.getenv("HOME")))
 cape_flats %>% xml_find_all(".//Case-Study-Name") %>% xml_text()
 cape_flats %>% xml_find_all(".//Spatial-point") 
 
-gonakier <- read_xml(sprintf("%s/backup/databases/XML_v1.0/Strategic/Keith_GonakierForest_2013_1.xml",Sys.getenv("HOME")))
+gonakier <- read_xml(sprintf("%s/respaldo/databases/XML_v1.0/Strategic/Keith_GonakierForest_2013_1.xml",Sys.getenv("HOME")))
 gonakier %>% xml_find_all(".//Case-Study-Name") %>% xml_text()
 gonakier %>% xml_find_all(".//Spatial-point") 
 
