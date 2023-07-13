@@ -4,6 +4,7 @@ library(lwgeom)
 require(vroom)
 require(ggplot2)
 
+here::i_am()
 #  Chamberlin trimetric conversion method
 chb_proj <- "+proj=chamb +lat_1=22 +lon_1=0 +lat_2=22 +lon_2=45 +lat_3=-22 +lon_3=22.5 +datum=WGS84 +type=crs"
 # Africa Lambert Conformal Conic
@@ -16,15 +17,28 @@ Africa %>% select(featurecla) %>% st_drop_geometry() %>% pull %>% table
 
 Africa %>% select(SUBREGION) %>% plot 
 
-myMergedData <- vroom(dir("Data/areas-per-country/",full.names=T))
+myMergedData <- vroom(dir("Data/area-calc/areas-per-country/",full.names=T))
 
-myMergedData %>% 
-  mutate(code=gsub("([MFTS0-9\\.]+)-[a-z_.]+","\\1",code)) %>%
-  group_by(code) %>% summarise(countries=n_distinct(OBJECTID),major=sum(major)*100,minor=sum(minor)*100,both=sum(both)*100) %>% mutate(biome=gsub("([MFTS0-9]+).[0-9]+","\\1",code)) -> DataEFGs
+DataEFGs <- 
+  myMergedData %>% 
+    mutate(code=gsub("([MFTS0-9\\.]+)-[a-z_.]+","\\1",code)) %>%
+    group_by(code) %>% 
+    summarise(
+      countries=n_distinct(OBJECTID),
+      major=sum(major)*100,
+      minor=sum(minor)*100,
+      both=sum(major+minor)) %>% 
+    mutate(biome=gsub("([MFTS0-9]+).[0-9]+","\\1",code))
 
-DataEFGs %>% filter(!biome %in% c("M2","M3")) %>% arrange(desc(major)) 
+DataEFGs %>% 
+  filter(!biome %in% c("M2","M3")) %>% 
+  arrange(desc(major)) 
 
-DataEFGs %>% filter(!biome %in% c("M2","M3"))  %>% group_by(biome) %>% summarise(EFGs=n_distinct(code)) %>% arrange(desc(EFGs)) 
+DataEFGs %>% 
+  filter(!biome %in% c("M2","M3"))  %>% 
+  group_by(biome) %>% 
+  summarise(EFGs=n_distinct(code)) %>% 
+  arrange(desc(EFGs)) 
 
 ggplot(Africa, aes(colour=SUBREGION,fill=SUBREGION %in% "Marine area")) + geom_sf() + theme_light() + theme(legend.position="None") + scale_fill_manual(values=c("lightgrey","aliceblue")) + 
   geom_sf_text(  aes(label = ISO_A2)) + geom_sf(data=Africa %>% filter(ISO_A2 %in% c("LY")),fill='darkgrey')
