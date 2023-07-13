@@ -5,10 +5,7 @@
 ####
 
 # Usage:
-# conda deactivate
-# cd Data
-# python3.9 ../inc/python/calculate-hist.py
-
+# 
 from osgeo import gdal
 from osgeo import ogr, osr
 import os
