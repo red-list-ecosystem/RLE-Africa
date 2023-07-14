@@ -13,7 +13,7 @@ require(readxl)
 require(tidyr)
 
 ## working directory
-here::i_am("workflow/workflow.md")
+here::i_am("inc/R/List-RLE-assessments.R")
 
 ## Database credentials
 
@@ -64,12 +64,20 @@ table(assessments_africa$country)
 # Fix needed: data is missing...
 za <- read_sf(here::here("Data","VEGMAP2018_Final.gdb"))
 za %>% slice(1)
-za %>% st_drop_geometry() %>% group_by(NBA2018_RLE_Status) %>% summarise(biomes=n_distinct(BIOME_18),ecos=n_distinct(Name_18))
+za %>% 
+  st_drop_geometry() %>% 
+  group_by(NBA2018_RLE_Status) %>% 
+  summarise(biomes=n_distinct(BIOME_18),
+            ecos=n_distinct(Name_18))
 
-za %>% mutate(mapped_area=st_area(Shape) %>% set_units("km^2")) %>% st_drop_geometry %>% group_by(BIOME_18,Name_18) %>% summarise(category=paste(unique(NBA2018_RLE_Status),collapse=";"), mapped_area=sum(mapped_area)) -> za_list
+za %>% 
+  mutate(mapped_area=
+           st_area(Shape) %>% set_units("km^2")) %>% 
+  st_drop_geometry %>% 
+  group_by(BIOME_18,Name_18) %>% 
+  summarise(category=paste(unique(NBA2018_RLE_Status),collapse=";"), 
+            mapped_area=sum(mapped_area)) -> za_list
 
-# Marine data /???
-# SA_mar %>% st_drop_geometry() %>% group_by(RLE_2018b) %>% summarise(eco=n_distinct(MarineEco_))
 
 xwalk_file <- sprintf("%s/proyectos/UNSW/ecosphere-db/input/xwalks/GETcrosswalk_SouthAfricaTerrestrial_V2_17012020_DK.xlsx", Sys.getenv("HOME"))
 
@@ -98,6 +106,19 @@ za_list %>%
     estimated_area=sum(mapped_area*membership),
     category=paste(unique(category),collapse=";"))
 
+## South Africa Marine data 
+SA_mar <- read_sf(
+  here::here("Data","ZAF", "NBA2018_Marine_ThreatStatus_ProtectionLevel.shp"))
+
+ SA_mar %>% 
+   st_drop_geometry() %>% 
+   group_by(RLE_2018b) %>% 
+   summarise(eco=n_distinct(MarineEco_))
+
+ SA_mar %>% st_drop_geometry() %>% slice(1) %>% print.AsIs()
+ SA_mar %>% st_drop_geometry() %>% pull(Ecosystem_) %>% table
+ SA_mar %>% st_drop_geometry() %>% pull(BroadEcosy) %>% table
+ 
 ### Madagascar ----
 
 ##shp <- read_sf(here::here("Data","Mada","layers","100001.shp"))
