@@ -7,7 +7,9 @@
 
 require(zen4R)
 library(parallel)
-setwd("Data")
+here::i_am("inc/R/zenodo-download.R")
+
+setwd(here::here("Data","area-calc"))
 #Version 2.1.1
 doi = "10.5281/zenodo.5090419"
 
@@ -15,9 +17,9 @@ download_zenodo(doi=doi, parallel = TRUE, parallel_handler = parLapply, cl = mak
 
 
 # all versions 10.5281/zenodo.3546513
-zenodo <- suppressWarnings(ZenodoManager$new())
-rec <- zenodo$getRecordById("5090419")
-rec$downloadFiles(path = "Data/")
+#zenodo <- suppressWarnings(ZenodoManager$new())
+#rec <- zenodo$getRecordById("5090419")
+#rec$downloadFiles(path = "Data/")
 
 #OR:
 #cd Data/
