@@ -67,6 +67,16 @@ chmod 744 Library/ -R
 ogrinfo Library/Project\ data\ deliverables/Geodatabases/North\ East\ Atlantic\ Sea\ geodatabase\ v03/ 'NEA geodatabase' | less
 ofrinfo Library/Project\ data\ deliverables/Geodatabases/Terrestrial\ geodatabase/RDB_Final_Maps_Terrestrial.shp
 
+# or 
+mkdir -p $SCRIPTDIR/Data/EURLH
+cd $SCRIPTDIR/Data/EURLH
+wget --continue https://forum.eionet.europa.eu/european-red-list-habitats/library/project-deliverables-data/database/raw-database-13_1_17/download/en/1/Raw%20Database%20-%2013_1_17.accdb
+wget --continue https://forum.eionet.europa.eu/european-red-list-habitats/library/project-deliverables-data/geodatabases/zip_export/do_export --output-document=geodatabases.zip
+
+#brew install mdbtools
+
+mdb-export Raw\ Database\ -\ 13_1_17.accdb "European Red List of Habitats Table" > EURLH.csv
+
 
 ## Auxilliary data  -------
 
