@@ -102,7 +102,32 @@ ggsave(here::here("Output", "Treemap-Example-terrestrial-South-Africa.png"))
 
 
 
-## South Africa ----
+## Madagascar ----
+
+# Fix needed: data is missing...
+library(readr)
+WIO <- read_csv(here::here("Data", "WIO", "WIO-M1.3-results.csv"))
+
+
+ggplot(WIO, aes(area=area_km2, fill = category, label = eco_name,
+                 subgroup = efg_code)) +
+  geom_treemap() +
+  geom_treemap_subgroup_text(
+    place = "bottomleft", 
+    grow = F, 
+    alpha = 0.35, 
+    #colour = thm_clrs[1], 
+    fontface = "italic", 
+    min.size = 0) +
+  geom_treemap_subgroup_border() +
+  scale_fill_manual(values=clrs) +
+  labs(
+    title = "Coral reefs of Western Indian Ocean",
+    subtitle='Each box is an assessment unit\ngrouped by biome or ecosystem functional groups.', fill='Risk category')
+
+ggsave(here::here("Output", "Treemap-Example-terrestrial-WIO.png"))
+
+## Madagascar ----
 
 # Fix needed: data is missing...
 library(readr)

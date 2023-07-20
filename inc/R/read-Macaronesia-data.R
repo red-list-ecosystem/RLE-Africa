@@ -118,3 +118,5 @@ ggplot(tbl,
   labs(
     title = "Ecosystems of Macaronesia (Canary Island and Madeira)",
     subtitle='Each box is an assessment unit\ngrouped by biome or ecosystem functional groups.', fill='Risk category')
+ggsave(here::here("Output", "Treemap-Example-terrestrial-Macaronesia.png"))
+
