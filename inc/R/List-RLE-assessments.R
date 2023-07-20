@@ -163,62 +163,6 @@ for (j in 1:nrow(mada.ecos)) {
 #mada.ecos %>% select(file) %>% map(~ read_sf(.x) %>% st_area %>% set_units("km^2"))
 
 
-clrs <- c(
-  "NE" = "white",
-  "DD" = "grey",
-  "LC" = "green4",
-  "NT" = "green",
-  "VU" = "yellow",
-  "EN" = "orange",
-  "CR" = "red")
-
-# extract biome code, summarise category per biome and create barplot...
-tbl <- assessments_africa %>% 
-  filter(country %in% "MG", asm_id %in% "Carre_RLE_Madagascar_2020") %>%
-  mutate(code=str_extract(efg_code,"[A-Z0-9]+"),
-         cat=factor(overall_risk_category, levels=names(clrs)))
-
-ce <- tbl %>% 
-  filter(!is.na(cat), !is.na(code)) %>% 
-  group_by(code, cat) %>%
-  summarise(total=n(),.groups="keep") %>%
-  arrange(code, desc(cat))
-
-ce <- ce %>%
-  group_by(code) %>%
-  mutate(label_y = cumsum(total)/sum(total))
-
-ce
-
-library(ggplot2)
-
-ggplot(ce, aes(x = code, y = total, fill = cat)) +
-  geom_col(position = "fill") +
-  geom_text(aes(y = label_y, label = total), 
-            nudge_y=-.02, #vjust = 1.5, 
-            colour = "black", size=3, angle=90) +
-  scale_fill_manual(values=clrs) +
-  theme_minimal() +
-  #labs(title=COL_pol$FORMAL_EN) +
-  theme(legend.position = "none") +
-  labs(x = element_blank(), y = element_blank()) + 
-  coord_flip()
-## ggsave(filename = "Madagascar-RLE-cat-EFG-barplot.png", width=5, height = 3, units = "in")
-
-ggplot(ce, aes(area=1, fill = cat, label = code,
-                     subgroup = code)) +
-  geom_treemap() +
-  geom_treemap_subgroup_text(
-    place = "topleft", 
-    grow = F, 
-    alpha = 0.35, 
-    colour = thm_clrs[1], 
-    fontface = "italic", 
-    min.size = 0) +
-  geom_treemap_subgroup_border() +
-  scale_fill_manual(values=clrs) +
-  labs(subtitle='Each box is a genus. Including only native species.', fill='Available data')
-
 assessments_africa %>% filter(country %in% "MG",asm_id %in% "Carre_RLE_Madagascar_2020") %>% pull(eco_name)
 
 mada.ecos %>% pull(name)
