@@ -129,50 +129,83 @@ ggsave(here::here("Output", "Treemap-Example-terrestrial-Madagascar.png"))
 
 
 
-# extract biome code, summarise category per biome and create barplot...
-tbl <- assessments_africa %>% 
-  filter(country %in% "MG", asm_id %in% "Carre_RLE_Madagascar_2020") %>%
-  mutate(code=str_extract(efg_code,"[A-Z0-9]+"),
-         cat=factor(overall_risk_category, levels=names(clrs)))
+### Congo ----
 
-ce <- tbl %>% 
-  filter(!is.na(cat), !is.na(code)) %>% 
-  group_by(code, cat) %>%
-  summarise(total=n(),.groups="keep") %>%
-  arrange(code, desc(cat))
+Congo <- read.dbf(here::here("Data","Congo","Congo_Basin_Forest_Ecosystems.tif.vat.dbf"))
+head(Congo)
 
-ce <- ce %>%
-  group_by(code) %>%
-  mutate(label_y = cumsum(total)/sum(total))
+Congo_xwalk <- 
+  assessments_africa %>% 
+  filter(asm_id %in% "Shapiro_CongoBasin_2020") %>% 
+  mutate(Code=str_replace(eco_id,"Shapiro_CongoBasin_2020_","") %>% as.numeric)
 
-ce
+Congo %>% 
+  left_join(Congo_xwalk) %>% 
+  select(Orig_Class, New_Class, Forest_Typ, eco_name, 
+         overall_risk_category, efg_code, Area_ha) %>% 
+  unique -> Congo_list
+
+Congo_list %>% 
+  mutate(efg_code=case_when(
+    is.na(eco_name) ~ "T4.2",
+    grepl("Montane Dense",New_Class) ~ "T1.3", 
+    grepl("Evergreen",Forest_Typ) ~ "T1.1",
+    grepl("Deciduous",Forest_Typ) ~ "T1.2", 
+    TRUE~efg_code),
+    Area_ha=set_units(Area_ha,'ha')) %>% 
+  group_by(efg_code) %>% 
+  summarise(n=n(),
+            mapped_area=sum(Area_ha) %>% 
+              set_units("km^2"),
+            category = paste((overall_risk_category),collapse=";"))
 
 
+head(Congo_list)  
 
-ggplot(ce, aes(x = code, y = total, fill = cat)) +
-  geom_col(position = "fill") +
-  geom_text(aes(y = label_y, label = total), 
-            nudge_y=-.02, #vjust = 1.5, 
-            colour = "black", size=3, angle=90) +
+tbl <- Congo_list %>% filter(!is.na(efg_code))
+ggplot(tbl, aes(area=Area_ha, fill = overall_risk_category, label = eco_name,
+                 subgroup = efg_code)) +
+  geom_treemap() +
+  geom_treemap_subgroup_text(
+    place = "bottomleft", 
+    grow = F, 
+    alpha = 0.35, 
+    #colour = thm_clrs[1], 
+    fontface = "italic", 
+    min.size = 0) +
+  geom_treemap_subgroup_border() +
   scale_fill_manual(values=clrs) +
-  theme_minimal() +
-  #labs(title=COL_pol$FORMAL_EN) +
-  theme(legend.position = "none") +
-  labs(x = element_blank(), y = element_blank()) + 
-  coord_flip()
-## ggsave(filename = "Madagascar-RLE-cat-EFG-barplot.png", width=5, height = 3, units = "in")
+  labs(
+    title = "Ecosystems of the Congo basin",
+    subtitle='Each box is an assessment unit\ngrouped by biome or ecosystem functional groups.', fill='Risk category')
+
+ggsave(here::here("Output", "Treemap-Example-terrestrial-Congo.png"))
+
+### Mozambique ----
+
+moz <- read_sf(here::here("Data","Moz","Moz_ecosystem_map_w_RLE_results_01Mar2021.shp"))
+moz %>% slice(1)
+
+tbl <- moz %>% filter(!is.na(IUCN_Funct))  %>% 
+  mutate(efg_code=str_extract(IUCN_Funct,"[A-Z0-9\\.]+"))
+
+ggplot(tbl, aes(area=`2016_Area`, fill = Overall__1, label = Name,
+                subgroup = efg_code)) +
+  geom_treemap() +
+  geom_treemap_subgroup_text(
+    place = "bottomleft", 
+    grow = F, 
+    alpha = 0.35, 
+    #colour = thm_clrs[1], 
+    fontface = "italic", 
+    min.size = 0) +
+  geom_treemap_subgroup_border() +
+  scale_fill_manual(values=clrs) +
+  labs(
+    title = "Ecosystems of Mozambique",
+    subtitle='Each box is an assessment unit\ngrouped by biome or ecosystem functional groups.', fill='Risk category')
+
+ggsave(here::here("Output", "Treemap-Example-terrestrial-Mozambique.png"))
 
 
-## South Africa Marine data 
-SA_mar <- read_sf(
-  here::here("Data","ZAF", "NBA2018_Marine_ThreatStatus_ProtectionLevel.shp"))
 
- SA_mar %>% 
-   st_drop_geometry() %>% 
-   group_by(RLE_2018b) %>% 
-   summarise(eco=n_distinct(MarineEco_))
-
- SA_mar %>% st_drop_geometry() %>% slice(1) %>% print.AsIs()
- SA_mar %>% st_drop_geometry() %>% pull(Ecosystem_) %>% table
- SA_mar %>% st_drop_geometry() %>% pull(BroadEcosy) %>% table
- 
