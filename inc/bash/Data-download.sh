@@ -36,11 +36,18 @@ tar -xjvf all-maps-raster-geotiff.tar.bz2
 # Skowno AL, Monyeki MS. South Africa’s Red List of Terrestrial Ecosystems (RLEs). Land. 2021; 10(10):1048. https://doi.org/10.3390/land10101048
 ## Map is also here:
 # http://bgis.sanbi.org/SpatialDataset/Detail/6715
-unzip -u $SCRIPTDIR/Data/VEGMAP2018_AEA_16082019Final.zip -d $SCRIPTDIR/Data/
 
-## South Africa marine
 mkdir -p $SCRIPTDIR/Data/ZAF
-unzip NBA2018_Marine_ThreatStatus_ProtectionLevel.zip -d $SCRIPTDIR/Data/ZAF
+## unzip -u $SCRIPTDIR/Data/VEGMAP2018_AEA_16082019Final.zip -d $SCRIPTDIR/Data/ZAF
+
+for ARCH in $(ls $GISDATA/ecosystems-status/regional/South-Africa/*zip)
+do 
+  unzip -u '$ARCH' -d $SCRIPTDIR/Data/ZAF
+done
+
+cp ~/proyectos/IUCN-RLE/IUCN-RLE-GET-xwalk/input/xwalks/GETcrosswalk_SouthAfricaTerrestrial_V2_17012020_DK.xlsx $SCRIPTDIR/Data/ZAF
+
+
 
 #We received data from Congo, Madagascar and Mozambique from Hedley
 mkdir -p $SCRIPTDIR/Data/Moz
