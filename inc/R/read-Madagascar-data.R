@@ -1,4 +1,8 @@
-
+require(sf)
+require(dplyr)
+library(readr)
+library(xml2)
+here::i_am("inc/R/read-Madagascar-data.R")
 
 ##shp <- read_sf(here::here("Data","Mada","layers","100001.shp"))
 ##shp %>% st_drop_geometry() # not very informative

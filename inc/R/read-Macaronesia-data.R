@@ -80,10 +80,6 @@ tblM %>%
   filter(is.na(efg_code)) %>%
   pull(Habitat_na)
 
-
-library(ggplot2)
-library(treemapify)
-
 tbl <- tblM %>% bind_rows(tblT) %>%
   mutate(category = case_when(
     `Overall Category EU28` %in% "Data Deficient" ~ "DD",
@@ -93,30 +89,6 @@ tbl <- tblM %>% bind_rows(tblT) %>%
     `Overall Category EU28` %in% "Endangered" ~ "EN",
     `Overall Category EU28` %in% "Critically Endangered" ~ "CR",
   ))
-clrs <- c(
-  "NE" = "white",
-  "DD" = "grey",
-  "LC" = "green4",
-  "NT" = "green",
-  "VU" = "yellow",
-  "EN" = "orange",
-  "CR" = "red")
 
-ggplot(tbl, 
-       aes(area=`area`, fill = category, label = code,
-                subgroup = efg_code)) +
-  geom_treemap() +
-  geom_treemap_subgroup_text(
-    place = "bottomleft", 
-    grow = F, 
-    alpha = 0.35, 
-    #colour = thm_clrs[1], 
-    fontface = "italic", 
-    min.size = 0) +
-  geom_treemap_subgroup_border() +
-  scale_fill_manual(values=clrs) +
-  labs(
-    title = "Ecosystems of Macaronesia (Canary Island and Madeira)",
-    subtitle='Each box is an assessment unit\ngrouped by biome or ecosystem functional groups.', fill='Risk category')
-ggsave(here::here("Output", "Treemap-Example-terrestrial-Macaronesia.png"))
-
+write_csv(tbl, file = here::here("Data", "systematic-assessment-summaries",
+                     "macaronesia-summary-RLE.csv"))
