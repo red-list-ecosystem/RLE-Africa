@@ -5,6 +5,7 @@ library(readxl)
 library(stringr)
 require(tidyr)
 library(readr)
+library(units)
 
 ## working directory
 here::i_am("inc/R/read-South-Africa-data.R")
@@ -36,7 +37,7 @@ zam_list <-
   filter(!is.na(BroadEcosystemGroup)) %>%
   group_by(BroadEcosystemGroup,Ecosystem_Primary) %>% 
   summarise(category=paste(unique(RLE_2018b),collapse=";"), 
-            mapped_area=sum(Shape_Area),
+            mapped_area=mean(TypeExtent_km),
             .groups="keep")
 
 
@@ -53,11 +54,21 @@ newcolnames <- colnames(xwalk) %>%
 
 colnames(xwalk) <- newcolnames
 
-
-xwalk %>% 
-  pivot_longer(`T1.1Tropical/Subtropical lowland rainforests`:`MFT1.3 Coastal saltmarshes`,names_to = "efg", values_to="membership") %>% 
+za_xwalk <- xwalk %>% 
+  pivot_longer(
+    `T1.1Tropical/Subtropical lowland rainforests` :
+      `MFT1.3 Coastal saltmarshes`,
+    names_to = "efg", values_to="membership") %>% 
   filter(!is.na(membership)) %>% 
-  transmute(eco_name, efg_code=str_extract(efg,"[A-Z0-9\\.]+"), membership) -> za_xwalk
+  transmute(eco_name, 
+            efg_code=str_extract(efg,"[A-Z0-9\\.]+"), 
+            membership) %>%
+  group_by(eco_name) %>% 
+  summarise(
+    efg_code=efg_code[which.max(membership)],
+    membership=max(membership),
+    others=paste(efg_code[-which.max(membership)],collapse = ";")
+  )
 
 za_list %>% 
   left_join(za_xwalk,by=c("NAME"="eco_name")) %>% 
@@ -67,25 +78,25 @@ za_list %>%
     estimated_area=sum(mapped_area*membership),
     category=paste(unique(category),collapse=";"))
 
-tbl <- za_list %>% 
+terr_table <- za_list %>% 
   left_join(za_xwalk,by=c("NAME"="eco_name"))  %>% 
   transmute(efg_code, 
             biome_code = str_extract(efg_code, "[A-Z0-9]+"),
-            mapped_area,
-            estimated_area=sum(mapped_area*membership),
+            assessment_area=set_units(mapped_area,'km2'),
             category)
 
-write_csv(tbl, file = here::here("Data", "systematic-assessment-summaries",
+write_csv(terr_table, 
+          file = 
+            here::here("Data", "systematic-assessment-summaries",
                                  "south-africa-summary-RLE.csv"))
 
 
 
-tbl <- zam_list %>% 
+mar_table <- zam_list %>% 
   left_join(za_xwalk,by=c("Ecosystem_Primary"="eco_name"))  %>% 
   transmute(efg_code, 
             biome_code = str_extract(efg_code, "[A-Z0-9]+"),
-            mapped_area,
-            estimated_area=sum(mapped_area*membership),
+            assessment_area=set_units(mapped_area,'km2'),
             category) %>%
   mutate(
     efg_code = case_when(
@@ -104,7 +115,7 @@ tbl <- zam_list %>%
     )
   )
 
-tbl %>% filter(is.na(efg_code)) %>% pull(BroadEcosystemGroup) %>% table
+mar_table %>% filter(is.na(efg_code)) %>% pull(BroadEcosystemGroup) %>% table
 
-write_csv(tbl, file = here::here("Data", "systematic-assessment-summaries",
+write_csv(mar_table, file = here::here("Data", "systematic-assessment-summaries",
                                  "south-africa-marine-summary-RLE.csv"))

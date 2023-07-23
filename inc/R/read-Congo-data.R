@@ -80,7 +80,12 @@ Congo_list %>%
 
 head(Congo_list)  
 
-tbl <- Congo_list %>% filter(!is.na(efg_code))
+Congo_table <- Congo_list %>% 
+  filter(!is.na(efg_code)) %>%
+  mutate(assessment_area=set_units(Area_ha,'ha') %>% set_units('km2')) %>%
+  select(-Area_ha)
 
-write_csv(tbl, file = here::here("Data", "systematic-assessment-summaries",
+write_csv(Congo_table, 
+          file = 
+            here::here("Data", "systematic-assessment-summaries",
                                  "congo-summary-RLE.csv"))

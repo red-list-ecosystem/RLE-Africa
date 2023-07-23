@@ -7,6 +7,7 @@ library(ggplot2)
 library(readr)
 library(cowplot)
 library(stringr)
+library(units)
 
 ## working directory
 here::i_am("inc/R/Treemap-systematic-assessments.R")
@@ -54,7 +55,7 @@ treemap_plot <- function(X) {
 
 ## Read tables ----
 
-lookup <- c(eco_name = c("code", "Name", "NAME", "Ecosystem_Primary"), 
+lookup <- c(eco_name = c("Name", "NAME", "Ecosystem_Primary"), 
             assessment_area = 
               c("area", "Area_ha", "area_km2", "estimated_area"),
             efg_code = "efg",
@@ -90,12 +91,74 @@ southafrica_mar <- read_csv(here::here("Data", "systematic-assessment-summaries"
   rename(any_of(lookup)) %>% rename_with(~str_replace(.x,"[0-9]$",""))
 
 
+### Strategic assessments ----
+
+strategics <- read_csv(
+  here::here("Data", "strategic-assessment-summaries",
+  "all-strategic-assessments.csv"))
+
+strategics <- 
+  bind_rows(
+    {strategics %>% 
+      filter(area_units %in% 'km2') %>% 
+      mutate(assessment_area=set_units(assessment_area,'km2'))
+    },
+    {strategics %>% 
+      filter(area_units %in% 'ha') %>% 
+      mutate(assessment_area=set_units(assessment_area,'ha'))
+    }
+  ) %>% 
+  select(-area_units) ## everything now in km2
+
+### Verify tables ----
+
+## double checked:
+# -	Included 11 strategic assessments, areas from assessment database or original publication,
+# -	Corrected areas for Congo (from ha to km2), data from attribute tables,
+# -	Checked areas for Mozambique (area in km2), data from attribute table represents estimated 2016 extent,
+# -	Data from Madagascar was entered manually from publication and supplementary data,
+# -	Data from WIO Coral reefs was entered manually from publication,
+# -	Reviewed the Macaronesia units to remove duplicates and correct areas, area calculated from AOO grid,
+# -	South Africa, had an issue with units assigned to more than one efg and areas were calculated erroneously or doubled counted, now units are assigned to one principal unit (to simplify the table), area from attribute table represents estimated 2014 extent for terrestrial (assuming it is km2) and “Type extent in km” for marine,
+
+
+all_data <- 
+  bind_rows(
+    strategics %>% drop_units(),
+    southafrica %>% 
+              mutate(assessment="South Africa (terrestrial)"),
+            mozambique %>% mutate(assessment="Mozambique"),
+            madagascar %>% mutate(assessment="Madagascar"), 
+            congo %>% mutate(assessment="Congo basin")) %>%
+  bind_rows(southafrica_mar %>% mutate(assessment="South Africa (marine)"), 
+            macaronesia %>% 
+              mutate(assessment="Macaronesia"), 
+            WIO %>% mutate(assessment="Western Indian Ocean")) %>%
+  group_by(assessment, eco_name) %>%
+  summarise(efg_code = paste(unique(efg_code), collapse = ";"),
+            assessment_area = max(assessment_area),
+            category = first(category),
+            .groups="keep")
+
+EFGinfo <- readxl::read_excel(here::here("Data","IUCN-GET-profiles-exported-2023-06-14.xlsx"), sheet=2) %>% 
+  transmute(efg_code = code, efg_name = str_replace(`short name`,"Seas ", "Seasonal "))
+
+all_data <- all_data %>% 
+  left_join(EFGinfo, by=c("efg_code"))
+
+
+write_csv(
+  all_data,
+  here::here("Data", "systematic-assessment-summaries",
+             "Supplementary-table-systematic-assessment-summary.csv"))
+
+
 ## Main systematic assessments; plots for MS ----
 
 ### All together ----
 
 all_data <- bind_rows(southafrica,mozambique,madagascar,congo) %>% 
-  filter(!is.na(assessment_area)) %>%
+  filter(!is.na(assessment_area),!is.na(efg_code)) %>%
   mutate(efg_code=str_extract(efg_code,"[A-Z0-9]+"),
          category = if_else(category %in% "NE","DD",category),
          category = factor(category, levels=names(clrs)))
@@ -168,6 +231,7 @@ other_efgs <- c("T1.2", "T1.3", "T2.3", "T2.4",
 zaf_data <- zaf_data %>% 
   mutate(
     efg_code = case_when(
+      is.na(efg_code) ~ "unclassified",
       efg_code %in% other_efgs ~ 
         "others: T1.2, T1.3, T2.3, T2.4, T3.1, T4.4, T5.5, MT2.1, MFT1",
       TRUE ~ efg_code),
@@ -211,7 +275,8 @@ ggsave(here::here("Output", "Treemap-Example-4-assessments.png"),
 other_efgs <- c("T4.5","F2.2", "TF1.4","F2.3", "MTF1.3")
 macaronesia_data <- macaronesia %>% 
   mutate(efg_code = if_else(efg_code %in% other_efgs, "others: MFT1, F2, TF1, T4.5", efg_code),
-         efg_code = str_wrap(efg_code,18))
+         efg_code = str_wrap(efg_code,18),
+         category = if_else(category %in% "NE","DD",category))
 
 macaronesia_plot <- treemap_plot(macaronesia_data) 
 
@@ -312,27 +377,4 @@ ggsave(mada_plot,
          here::here("Output", "Treemap-Example-terrestrial-Madagascar.png"))
 
 
-
-all_data <- 
-  bind_rows(southafrica %>% mutate(assessment="South Africa (terrestrial)"),
-            mozambique %>% mutate(assessment="Mozambique"),
-            madagascar %>% mutate(assessment="Madagascar"), 
-            congo %>% mutate(assessment="Congo basin")) %>%
-  bind_rows(southafrica_mar %>% mutate(assessment="South Africa (marine)"), 
-            macaronesia %>% 
-              mutate(eco_name= if_else(is.na(Habitat_na),
-                                       paste(`Habitat Type Name`),
-                                       paste(eco_name, Habitat_na)),
-                     assessment="Macaronesia"), 
-            WIO %>% mutate(assessment="Western Indian Ocean")) %>%
-  group_by(assessment, eco_name) %>%
-  summarise(efg_codes = paste(unique(efg_code), collapse = ";"),
-            assessment_area = max(assessment_area),
-            category = first(category),
-            .groups="keep")
-
-write_csv(
-  all_data,
-  here::here("Data", "systematic-assessment-summaries",
-           "Supplementary-table-systematic-assessment-summary.csv"))
 
