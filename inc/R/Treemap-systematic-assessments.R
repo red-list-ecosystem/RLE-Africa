@@ -146,12 +146,14 @@ EFGinfo <- readxl::read_excel(here::here("Data","IUCN-GET-profiles-exported-2023
 all_data <- all_data %>% 
   left_join(EFGinfo, by=c("efg_code"))
 
-
+# this is the output from files combined above
 write_csv(
   all_data,
   here::here("Data", "systematic-assessment-summaries",
              "Supplementary-table-systematic-assessment-summary.csv"))
-
+# We can read the file shared by David, which contains the data above + his comments and edits 
+here::here("Data", 
+           "All-assessments-summary-JRFP-DK.xlsx")
 
 ## Main systematic assessments; plots for MS ----
 
