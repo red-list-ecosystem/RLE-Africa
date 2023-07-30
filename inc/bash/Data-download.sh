@@ -36,11 +36,18 @@ tar -xjvf all-maps-raster-geotiff.tar.bz2
 # Skowno AL, Monyeki MS. South Africa’s Red List of Terrestrial Ecosystems (RLEs). Land. 2021; 10(10):1048. https://doi.org/10.3390/land10101048
 ## Map is also here:
 # http://bgis.sanbi.org/SpatialDataset/Detail/6715
-unzip -u $SCRIPTDIR/Data/VEGMAP2018_AEA_16082019Final.zip -d $SCRIPTDIR/Data/
 
-## South Africa marine
 mkdir -p $SCRIPTDIR/Data/ZAF
-unzip NBA2018_Marine_ThreatStatus_ProtectionLevel.zip -d $SCRIPTDIR/Data/ZAF
+## unzip -u $SCRIPTDIR/Data/VEGMAP2018_AEA_16082019Final.zip -d $SCRIPTDIR/Data/ZAF
+
+for ARCH in $(ls $GISDATA/ecosystems-status/regional/South-Africa/*zip)
+do 
+  unzip -u '$ARCH' -d $SCRIPTDIR/Data/ZAF
+done
+
+cp ~/proyectos/IUCN-RLE/IUCN-RLE-GET-xwalk/input/xwalks/GETcrosswalk_SouthAfricaTerrestrial_V2_17012020_DK.xlsx $SCRIPTDIR/Data/ZAF
+
+
 
 #We received data from Congo, Madagascar and Mozambique from Hedley
 mkdir -p $SCRIPTDIR/Data/Moz
@@ -59,6 +66,16 @@ cd $SCRIPTDIR/Data/EURLH
 chmod 744 Library/ -R
 ogrinfo Library/Project\ data\ deliverables/Geodatabases/North\ East\ Atlantic\ Sea\ geodatabase\ v03/ 'NEA geodatabase' | less
 ofrinfo Library/Project\ data\ deliverables/Geodatabases/Terrestrial\ geodatabase/RDB_Final_Maps_Terrestrial.shp
+
+# or 
+mkdir -p $SCRIPTDIR/Data/EURLH
+cd $SCRIPTDIR/Data/EURLH
+wget --continue https://forum.eionet.europa.eu/european-red-list-habitats/library/project-deliverables-data/database/raw-database-13_1_17/download/en/1/Raw%20Database%20-%2013_1_17.accdb
+wget --continue https://forum.eionet.europa.eu/european-red-list-habitats/library/project-deliverables-data/geodatabases/zip_export/do_export --output-document=geodatabases.zip
+
+#brew install mdbtools
+
+mdb-export Raw\ Database\ -\ 13_1_17.accdb "European Red List of Habitats Table" > EURLH.csv
 
 
 ## Auxilliary data  -------

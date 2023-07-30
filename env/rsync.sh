@@ -3,4 +3,4 @@
 # send data from a local folder to a remote folder
 rsync -gloptrunv $SCRIPTDIR/Data/ ${REMOTEUSER}@${REMOTEHOST}:~/proyectos/IUCN-RLE/$PROJECTNAME/Data
 # receive data from a remote folder to the local copy of the repository
-rsync -gloptrunv ${REMOTEUSER}@${REMOTEHOST}:~/proyectos/IUCN-RLE/$PROJECTNAME/Data $SCRIPTDIR/Data/
+rsync -gloptrunv ${REMOTEUSER}@${REMOTEHOST}:~/proyectos/IUCN-RLE/$PROJECTNAME/Data $SCRIPTDIR/
