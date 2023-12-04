@@ -2,7 +2,7 @@ library("googledrive")
 library(glue)
 library(purrr)
 
-here::i_am("workflow/workflow.md")
+here::i_am("inc/R/google-drive-upload.R")
 
 # Upload geospatial data ----
 
