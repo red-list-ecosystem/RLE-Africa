@@ -85,6 +85,9 @@ Congo_table <- Congo_list %>%
   mutate(assessment_area=set_units(Area_ha,'ha') %>% set_units('km2')) %>%
   select(-Area_ha)
 
+if (!dir.exists(here::here("Data", "systematic-assessment-summaries"))) 
+  dir.create(here::here("Data", "systematic-assessment-summaries"))
+
 write_csv(Congo_table, 
           file = 
             here::here("Data", "systematic-assessment-summaries",

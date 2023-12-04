@@ -1,6 +1,7 @@
 require(sf)
 require(dplyr)
 library(readr)
+library(magrittr)
 library(xml2)
 here::i_am("inc/R/read-Madagascar-data.R")
 
