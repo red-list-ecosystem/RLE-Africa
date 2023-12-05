@@ -1,20 +1,18 @@
 # Set up ----
 
 ## libraries
-require(sf)
 require(dplyr)
 require(RPostgreSQL)
-require(xml2)
-require(stringr)
-require(foreign)
-require(units)
 require(magrittr)
-require(readxl)
-require(tidyr)
-library(treemapify)
+library(sf)
+
+
+lme_admin <- read_sf("https://github.com/red-list-ecosystem/typology-map-data/raw/master/data/analysis/lme_admin.topo.json") %>%
+  st_drop_geometry()
+
 
 ## working directory
-here::i_am("inc/R/List-RLE-assessments.R")
+here::i_am("inc/R/misc/query-EFG-countries-database.R")
 
 ## Database credentials
 
@@ -36,13 +34,16 @@ con <- dbConnect(drv, dbname = dbinfo[["database"]],
 
 dbListTables(con)
 qry <- "select * from region_group_areas limit 2"
-qry <- "select * from all_region_group_areas limit 2"
-dbGetQuery(con,qry)
+qry <- "select * from all_region_group_areas"
+qry_website <- dbGetQuery(con,qry)
 
-qry <- "select * from layers limit 2"
-dbGetQuery(con,qry)
 
-qry <- "select ogc_fid, area_km2 from eez_valid limit 2"
-dbGetQuery(con,qry)
+qry_website <- qry_website %>% mutate(occurrence = str_replace_all(occurrence,c("1"="major","2"="minor")))
+
+table_occurrence_all_countries <- lme_admin %>% left_join(qry_website, by = "region_id") %>% select(region_id, title_EN, layer_id, occurrence,area)
+
+library(readr)
+write_csv(file = here::here("Data","efg-occurrence-area-by-country-or-marine-region.csv"),
+          table_occurrence_all_countries)
 
 dbDisconnect(con)
