@@ -47,7 +47,10 @@ DataEFGs <-
     both=sum(both)*100) %>% 
   mutate(biome=gsub("([MFTS0-9]+).[0-9]+","\\1",code)) %>% 
   left_join(select(EFGinfo,c(code,`short name`,biome_name)),by="code") %>%
-  mutate(name=str_replace_all(`short name`," ","\n"))
+  mutate(
+    biome_name = str_replace_all(biome_name, "emi-", "emi"),
+    `short name` = str_replace_all(`short name`, "emi-", "emi"),
+    name=str_replace_all(`short name`," ","\n"))
 
 # check summaries for all of Africa ----
 
@@ -81,7 +84,7 @@ p <- ggplot(
 p + 
   theme(axis.text.x = element_text(angle=45, vjust = 1, hjust=1)) + 
   xlab("Ecosystem Functional Group") + 
-  ylab("% of global major distribution") + 
+  ylab("Global major distribution (%)") + 
   geom_errorbar(aes(xmin=major,xmax=both))
 
 # test of polar plot with error bars ----
@@ -97,7 +100,7 @@ p +
   coord_polar() + 
   labs(title="Ecosystems in Africa", 
        x="Ecosystem Functional Group", 
-       y="% of global major distribution",
+       y="Global major distribution (%)",
        fill="Biome") + 
   geom_errorbar(aes(ymin=major,ymax=both))
 
@@ -114,7 +117,7 @@ coord_plot <- function(dat, flt, plot_title) {
     coord_polar() + 
     labs(title=plot_title, 
          x="Ecosystem Functional Group",
-         y="% of global major distribution", fill="Biomes") +
+         y="Global major distribution (%)", fill="Biomes") +
     theme(
       legend.position = "right",
       legend.text = element_text(size=8),
@@ -158,24 +161,28 @@ ggsave(here::here("Output","Fig1c-Marine-EFG.png"),
 coord_plot <- function(dat, flt, plot_title, add_note=T) {
   dts <- dat %>% filter(both>0.01, biome %in% flt)
   lvs <- unique(c(dts %>% pull(`biome`),
-           dts %>% pull(`short name`)))
-  dts <- dts %>% mutate(efg_name=factor(`short name`, levels=lvs))
+           dts %>% pull(`short name`))) %>% sort()
+  dts <- dts %>% mutate(efg_name=factor(`short name`, levels=lvs), 
+                        yloc=as.numeric(efg_name))
   brks <- unique(dts %>% pull(`short name`))
+  grps <- dts %>% distinct(biome,biome_name) %>%
+    mutate(biome=factor(`biome`, levels=lvs), 
+           yloc=as.numeric(biome))
   
-    p <- ggplot(dts) + 
-    geom_bar(aes(y=efg_name, x=major, fill=`biome`), 
-             width=1, stat='identity',alpha=.3, col='black') + 
-    geom_bar(aes(y=efg_name, x=both, fill=`biome`),
-             width=1, stat='identity',alpha=.3, col='black') +
-      geom_text(data=dts %>% distinct(biome,biome_name),
+    p <- ggplot() + 
+      scale_y_discrete(limits=rev, breaks=brks, drop=FALSE) +
+      geom_text(data=grps,
                 aes(y=biome, x=0.1,
-                    label=biome_name,col=biome),
+                    label=biome_name, col=biome),
                 adj=0, size=3) +
-      scale_y_discrete(limits=rev, breaks=brks) +
+    geom_bar(data=dts, aes(y=efg_name, x=major, fill=`biome`), 
+             width=1, stat='identity',alpha=.3, col='black') + 
+    geom_bar(data=dts, aes(y=efg_name, x=both, fill=`biome`),
+             width=1, stat='identity',alpha=.3, col='black') +
     theme_bw() +
       labs(title=plot_title, 
            y=element_blank(),
-           x="% of global major distribution", fill="Biomes") +
+           x="Global major distribution (%)", fill="Biomes") +
       theme(
         legend.position = "none",
         panel.grid.major = element_blank(),
@@ -191,7 +198,8 @@ coord_plot <- function(dat, flt, plot_title, add_note=T) {
   return(p)
 }
 
-plotThoz <-  coord_plot(DataEFGs, terr.biomes, plot_title="Terrestrial realm") 
+plotThoz <-  
+  coord_plot(DataEFGs, terr.biomes, plot_title="Terrestrial realm") 
 plotFhoz <-  coord_plot(DataEFGs, fresh.biomes, 
                         plot_title="Freshwater and Subterranean (+ transitions)") 
 

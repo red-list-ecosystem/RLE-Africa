@@ -252,7 +252,7 @@ pgrid <- plot_grid(
   mada_plot + labs(title = element_blank()),
   zaf_plot + labs(title = element_blank()), 
   moz_plot + labs(title = element_blank()),
-  labels = c("A", "B", "C","D"),
+  labels = c("a", "b", "c", "d"),
   hjust = -1,
   vjust=3,
   greedy = TRUE
@@ -344,7 +344,7 @@ pgrid <- plot_grid(
   macaronesia_plot + theme(legend.position = "none"),
   WIO_plot + theme(legend.position = "none"), 
    legend_c,
-  labels = c("A", "B", "C"),
+  labels = c("a", "b", "c"),
   hjust = -1,
   vjust=2,
   greedy = TRUE
